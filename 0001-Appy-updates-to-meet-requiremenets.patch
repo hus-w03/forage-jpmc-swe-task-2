@@ -1,0 +1,106 @@
+From 0b19eebd5168fdb94cc9add807ccb1db137b492f Mon Sep 17 00:00:00 2001
+From: hus-w03 <hwitwit47@gmail.com>
+Date: Sat, 17 Aug 2024 15:59:15 +0100
+Subject: [PATCH] Appy updates to meet requiremenets
+
+diff --git a/package.json b/package.json
+index ca234e9..30f2e65 100644
+--- a/package.json
++++ b/package.json
+@@ -11,11 +11,11 @@
+     "@types/node": "^10.12.19",
+     "@types/react": "^16.9.0",
+     "@types/react-dom": "^16.0.11",
+-    "bootstrap": "^4.2.1",
++    "bootstrap": "^5.3.3",
+     "puppeteer": "^1.19.0",
+     "react": "^16.9.0",
+     "react-dom": "^16.9.0",
+-    "react-scripts": "2.1.3"
++    "react-scripts": "^5.0.1"
+   },
+   "scripts": {
+     "start": "react-scripts --openssl-legacy-provider start",
+@@ -33,7 +33,7 @@
+     "not op_mini all"
+   ],
+   "devDependencies": {
+-    "awesome-typescript-loader": "^5.2.1",
++    "awesome-typescript-loader": "^3.1.3",
+     "source-map-loader": "^0.2.4",
+     "typescript": "^3.2.4"
+   }
+diff --git a/src/App.tsx b/src/App.tsx
+index 0728518..4260dbe 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -8,6 +8,7 @@ import './App.css';
+  */
+ interface IState {
+   data: ServerRespond[],
++  showGraph: boolean,
+ }
+ 
+ /**
+@@ -22,6 +23,7 @@ class App extends Component<{}, IState> {
+       // data saves the server responds.
+       // We use this state to parse data down to the child element (Graph) as element property
+       data: [],
++      showGraph: false,
+     };
+   }
+ 
+@@ -29,18 +31,28 @@ class App extends Component<{}, IState> {
+    * Render Graph react component with state.data parse as property data
+    */
+   renderGraph() {
+-    return (<Graph data={this.state.data}/>)
++    if (this.state.showGraph){
++      return (<Graph data={this.state.data}/>)
++    }
+   }
+ 
+   /**
+    * Get new data from server and update the state with the new data
+    */
+   getDataFromServer() {
+-    DataStreamer.getData((serverResponds: ServerRespond[]) => {
+-      // Update the state by creating a new array of data that consists of
+-      // Previous data in the state and the new data from server
+-      this.setState({ data: [...this.state.data, ...serverResponds] });
+-    });
++    let x = 0;
++    const interval = setInterval(() => {
++      DataStreamer.getData((serverResponds: ServerRespond[]) => {
++        this.setState({
++           data: serverResponds,
++           showGraph : true,
++          });
++      });
++      x++;
++      if (x > 1000){
++        clearInterval(interval);
++      }
++    }, 100);
+   }
+ 
+   /**
+diff --git a/src/Graph.tsx b/src/Graph.tsx
+index 3b2a7da..ffbff36 100644
+--- a/src/Graph.tsx
++++ b/src/Graph.tsx
+@@ -14,7 +14,7 @@ interface IProps {
+  * Perspective library adds load to HTMLElement prototype.
+  * This interface acts as a wrapper for Typescript compiler.
+  */
+-interface PerspectiveViewerElement {
++interface PerspectiveViewerElement extends HTMLElement {
+   load: (table: Table) => void,
+ }
+ 
+@@ -32,7 +32,7 @@ class Graph extends Component<IProps, {}> {
+ 
+   componentDidMount() {
+     // Get element to attach the table from the DOM.
+-    const elem: PerspectiveViewerElement = document.getElementsByTagName('perspective-viewer')[0] as unknown as PerspectiveViewerElement;
+... (40 lines left)
